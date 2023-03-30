@@ -1,0 +1,63 @@
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
+from fastapi import Response, Request, Form, Body
+from fastapi import FastAPI
+import uvicorn
+# from pydantic import Baseactionl
+# from starlette.middleware.gzip import GZipMiddleware
+from starlette.responses import JSONResponse, RedirectResponse, FileResponse
+from func.function import Func
+from func.router import Router
+from func.const import *
+# from starlette.staticfiles import StaticFiles
+# from starlette.templating import Jinja2Templates
+# from func.function import Func
+
+
+app = FastAPI(
+    title="SeoApi",
+    description="seo网络服务api - by TG@seo888",
+    version="1.0.0",
+    openapi_tags=[
+        {
+            "name": "百度",
+            "description": "百度相关api",
+        },
+        {
+            "name": "域名",
+            "description": "域名相关api",
+        },
+        {
+            "name": "telegram",
+            "description": "telegram相关api",
+        },
+    ],
+    docs_url="/",
+    redoc_url=None,
+    openapi_url="/api/v1/openapi.json",
+)
+func = Func()
+# 路由引用
+router = Router()
+
+@app.get("/url")
+async def url(q: str=''):
+    """url跳转"""
+    if q[:len("http")] == "http":
+        return RedirectResponse(url=q,status_code=301)
+    return {'q':q}
+
+@app.get("/baidu/{action}", tags=["百度"])
+async def baidu(action: BaiduAction, q: str = None):
+    """百度接口"""
+    return await router.baidu(action, q)
+
+@app.get("/google/{action}", tags=["谷歌"])
+async def google(action: GoogleAction, q: str = None):
+    """谷歌接口"""
+    return await router.google(action, q)
+
+
+
+if __name__ == '__main__':
+    uvicorn.run(app, host="127.0.0.1", port=16999)
