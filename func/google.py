@@ -6,14 +6,14 @@ from urllib.parse import quote, unquote
 from fake_useragent import UserAgent
 import httpx
 from lxml import etree
-from func.function import Func
+
 
 
 class Google():
     """百度功能"""
 
-    def __init__(self):
-        self.func = Func()
+    def __init__(self,func):
+        self.func = func
 
     async def request_get(self, url, headers=None, params=None, use_ip='127.0.0.1'):
         """异步访问"""
@@ -62,8 +62,7 @@ class Google():
                 real_url = div.xpath('./a/@href')[0].replace('/url?q=', '')
                 real_url = real_url.split('&sa=U&')[0]
                 real_url = unquote(unquote(real_url))
-                full_domain, root_domain = self.func.get_domain_info(real_url)[
-                    1:]
+                full_domain, root_domain = self.func.get_domain_info(real_url)[1:]
                 datas.append({"id": index + 1, "title": title,
                              "full_domain": full_domain, "domain": root_domain, "link": real_url})
             except Exception as e:

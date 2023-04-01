@@ -16,7 +16,7 @@ class Func():
     """功能函数"""
 
     def __init__(self):
-        pass
+        self.ips = self.get_ips()
 
     def get_ips(self):
         """获取当前服务器所有IP"""
