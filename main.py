@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from fastapi import Response, Request, Form, Body
@@ -7,6 +9,7 @@ import uvicorn
 # from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse, RedirectResponse, FileResponse
 from func.function import Func
+from func import middle
 from func.router import Router
 from func.const import *
 # from starlette.staticfiles import StaticFiles
@@ -40,6 +43,11 @@ func = Func()
 # 路由引用
 router = Router()
 
+@app.middleware("http")
+async def middleware(request: Request, call_next):
+    """中间件 访问前后"""
+    return await middle.middleware(request, call_next, func)
+
 @app.get("/url")
 async def url(q: str=''):
     """url跳转"""
@@ -56,7 +64,6 @@ async def baidu(action: BaiduAction, q: str = None):
 async def google(action: GoogleAction, q: str = None):
     """谷歌接口"""
     return await router.google(action, q)
-
 
 
 if __name__ == '__main__':

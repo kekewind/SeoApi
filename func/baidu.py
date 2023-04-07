@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """百度功能"""
 
 import json
@@ -19,6 +20,7 @@ class Baidu():
 
     def __init__(self, func):
         self.func = func
+        os.makedirs("cookie_cache",exist_ok=True)
 
     async def request_get(self, url, headers=None, params=None, use_ip='127.0.0.1'):
         """异步访问"""

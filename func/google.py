@@ -1,4 +1,5 @@
-"""百度功能"""
+# -*- coding: UTF-8 -*-
+"""谷歌功能"""
 
 import random
 import re
@@ -10,7 +11,7 @@ from lxml import etree
 
 
 class Google():
-    """百度功能"""
+    """谷歌功能"""
 
     def __init__(self,func):
         self.func = func
@@ -51,8 +52,6 @@ class Google():
     async def get_data(self, q):
         """获取搜索结果data数据"""
         resp_text = await self.search(q)
-        with open('index.html', 'w', encoding='utf-8')as f:
-            f.write(resp_text)
         tree = etree.HTML(resp_text)
         divs = tree.xpath('//div[@class="egMi0 kCrYT"]')
         datas = []

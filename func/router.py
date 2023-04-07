@@ -1,3 +1,6 @@
+# -*- coding: UTF-8 -*-
+"""路由解析器"""
+
 import os
 from fastapi import Response, Request, Form, Body
 from starlette.responses import JSONResponse, RedirectResponse, FileResponse
