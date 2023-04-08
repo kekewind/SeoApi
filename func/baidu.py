@@ -11,6 +11,7 @@ import aiofiles
 import arrow
 from fake_useragent import UserAgent
 import httpx
+import chardet
 from lxml import etree
 from tenacity import retry, stop_after_attempt
 
@@ -34,6 +35,7 @@ class Baidu():
         """获取cookie"""
         url = 'http://www.baidu.com'
         user_agent = UserAgent().random
+        user_agent = f"{user_agent} (compatible; baidumib;mip; + https://www.mipengine.org)"
         headers = {'User-Agent': user_agent}
         transport = httpx.AsyncHTTPTransport(local_address=use_ip)
         async with httpx.AsyncClient(http2=True, transport=transport) as client:
@@ -62,22 +64,18 @@ class Baidu():
             cache_text = "".join(linecache.getlines(ip_path))
             cache = json.loads(cache_text)
         headers = {'User-Agent': cache["User-Agent"],
-                   'Accept': 'text/html,application/xhtml+xml,application/xml;'
-                   'q=0.9,image/avif,image/webp,image/apng,*/*;'
-                   'q=0.8,application/signed-exchange;v=b3;q=0.7',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                    'Accept-Encoding': 'gzip, deflate, br',
                    'Accept-Language': 'zh-CN,zh;q=0.9',
                    'Connection': 'keep-alive',
                    'Cookie': cache['cookie'],
                    'Host': 'www.baidu.com',
                    'Referer': 'http://www.baidu.com/',
-                   'Sec-Fetch-Dest': 'document',
-                   'Sec-Fetch-Mode': 'navigate',
-                   'Sec-Fetch-Site': 'same-origin',
                    'Upgrade-Insecure-Requests': '1'}
         resp = await self.request_get(url, headers=headers, params=params, use_ip=use_ip)
-        source_data = resp.content.decode('utf-8')
-        return source_data, cache
+        # print(resp.text)
+        # resp_text = resp.content.decode(chardet.detect(resp.content)["encoding"])
+        return resp.text, cache
 
     async def get_source(self, q):
         """获取搜索结果源码"""
@@ -97,12 +95,15 @@ class Baidu():
     async def get_data(self, q):
         """获取搜索结果data数据"""
         resp_text, cache = await self.search(q)
+        if "</title>" not in resp_text:
+            return {"keyword": q, 'success': False,'info':'百度验证码'}
         tree = etree.HTML(resp_text)
         others_source = tree.xpath("//div[@class='c-font-medium list_1V4Yg']//a/text()")
+        more = []
         if len(others_source) > 0:
             more = [i.strip() for i in others_source]
-        related_source = tree.xpath(
-            "//table[@class='rs-table_3RiQc']//a/text()")
+        related_source = tree.xpath("//table[@class='rs-table_3RiQc']//a/text()")
+        related = []
         if len(related_source) > 0:
             related = [i.strip() for i in related_source]
         results = tree.xpath(
@@ -125,7 +126,7 @@ class Baidu():
                     full_domain, domain = self.func.get_domain_info(real_url)[1:]
                     datas.append({'id': index_id, 'title': title, 'origin': origin,
                                  "full_domain": full_domain, "domain": domain, "link": real_url, 'des': des})
-        return {"keyword": q, "related": related, "more": more, "data": datas}
+        return {"keyword": q, "related": related, "more": more, "data": datas,'success': True}
 
     async def get_included(self, q):
         """获取收录数据"""
