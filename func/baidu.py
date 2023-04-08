@@ -65,7 +65,7 @@ class Baidu():
             cache = json.loads(cache_text)
         headers = {'User-Agent': cache["User-Agent"],
                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                   'Accept-Encoding': 'gzip, deflate, br',
+                   'Accept-Encoding': 'gzip, deflate',
                    'Accept-Language': 'zh-CN,zh;q=0.9',
                    'Connection': 'keep-alive',
                    'Cookie': cache['cookie'],
@@ -73,8 +73,6 @@ class Baidu():
                    'Referer': 'http://www.baidu.com/',
                    'Upgrade-Insecure-Requests': '1'}
         resp = await self.request_get(url, headers=headers, params=params, use_ip=use_ip)
-        # print(resp.text)
-        # resp_text = resp.content.decode(chardet.detect(resp.content)["encoding"])
         return resp.text, cache
 
     async def get_source(self, q):
