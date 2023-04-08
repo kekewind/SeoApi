@@ -27,6 +27,14 @@ app = FastAPI(
             "description": "百度相关api",
         },
         {
+            "name": "谷歌",
+            "description": "谷歌相关api",
+        },
+        {
+            "name": "米人",
+            "description": "米人相关api",
+        },
+        {
             "name": "域名",
             "description": "域名相关api",
         },
@@ -61,9 +69,14 @@ async def baidu(action: BaiduAction, q: str = None):
     return await router.baidu(action, q)
 
 @app.get("/google/{action}", tags=["谷歌"])
-async def google(action: GoogleAction, q: str = None):
+async def google(action: GoogleAction, q: str = None,num: int = 50):
     """谷歌接口"""
-    return await router.google(action, q)
+    return await router.google(action, q,num)
+
+@app.get("/mir6/{action}", tags=["米人"])
+async def mir6(action: Mir6Action, q: str = None):
+    """米人mir6.com接口"""
+    return await router.mir6(action, q)
 
 
 if __name__ == '__main__':

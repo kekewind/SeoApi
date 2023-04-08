@@ -33,16 +33,17 @@ class Func():
             if "127.0.0.1" in ips:
                 ips.remove('127.0.0.1')
             return ips
-        except:
+        except Exception as err:
+            print(err)
             return []
 
     def get_domain_info(self, domain):
         """获取域名前后缀"""
         tld = tldextract.extract(domain)
-        subdomain = tld.subdomain
+        subdomain = tld.subdomain.lower()
         full_domain = ".".join(
-            [tld.subdomain, tld.domain, tld.suffix]).strip(".")
-        root_domain = ".".join([tld.domain, tld.suffix]).strip(".")
+            [tld.subdomain, tld.domain, tld.suffix]).strip(".").lower()
+        root_domain = ".".join([tld.domain, tld.suffix]).strip(".").lower()
         return subdomain, full_domain, root_domain
 
     def get_yaml(self, path):

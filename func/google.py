@@ -24,7 +24,7 @@ class Google():
             resp = await client.get(url)
         return resp
 
-    async def search(self, q):
+    async def search(self, q,num):
         """搜索查询"""
         text = unquote(q)
         url = 'https://www.google.com/search'
@@ -33,7 +33,7 @@ class Google():
                   "source": "hp",
                   "sclient": "gws-wiz",
                   "newwindow": 1,
-                  "num": 50}
+                  "num": num}
         use_ip = random.choice(self.func.get_ips())
         # user_agent = UserAgent().random
         user_agent = "APIs-Google (+https://developers.google.com/webmasters/APIs-Google.html)"
@@ -44,14 +44,14 @@ class Google():
         resp = await self.request_get(url, headers=headers, params=params, use_ip=use_ip)
         return resp.text
 
-    async def get_source(self, q):
+    async def get_source(self, q,num):
         """获取搜索结果源码"""
-        result = await self.search(q)
+        result = await self.search(q,num)
         return result
 
-    async def get_data(self, q):
+    async def get_data(self, q,num):
         """获取搜索结果data数据"""
-        resp_text = await self.search(q)
+        resp_text = await self.search(q,num)
         tree = etree.HTML(resp_text)
         divs = tree.xpath('//div[@class="egMi0 kCrYT"]')
         datas = []
@@ -64,14 +64,14 @@ class Google():
                 full_domain, root_domain = self.func.get_domain_info(real_url)[1:]
                 datas.append({"id": index + 1, "title": title,
                              "full_domain": full_domain, "domain": root_domain, "link": real_url})
-            except Exception as e:
-                print(index, e)
+            except Exception as err:
+                print(index, err)
         # 相关搜索 关键词
         related = tree.xpath('//div[@class="kjGX2"]/span/div/text()')
         # 其他人搜
         more = tree.xpath('//div[@class="Lt3Tzc"]/text()')
         return {"keyword": q, "related": related, "more":more,"data": datas}
 
-    def get_included(self, q):
+    def get_included(self, q,num):
         """获取搜索结果源码"""
         return 'source'

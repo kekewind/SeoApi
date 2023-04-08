@@ -8,6 +8,7 @@ from func.baidu import Baidu
 from func.google import Google
 from func.const import *
 from func.function import Func
+from func.mir6 import Mir6
 
 class Router():
     """路由解析器"""
@@ -31,14 +32,21 @@ class Router():
             result = await baidu.get_pulldown(q)
         return JSONResponse(result)
 
-    async def google(self, action, q):
+    async def google(self, action, q,num):
         """谷歌接口"""
         google = Google(self.func)
         if action == GoogleAction.SOURCE:
-            result = await google.get_source(q)
+            result = await google.get_source(q,num)
             return Response(content=result, media_type='text/html;charset=utf-8')
         elif action == GoogleAction.DATA:
-            result = await google.get_data(q)
+            result = await google.get_data(q,num)
         elif action == GoogleAction.INCLUDED:
-            result = google.get_included(q)
+            result = await google.get_included(q,num)
+        return JSONResponse(result)
+    
+    async def mir6(self, action, q):
+        """谷歌接口"""
+        mir6 = Mir6(self.func)
+        if action == Mir6Action.WEIGHT:
+            result = await mir6.get_weight(q)
         return JSONResponse(result)

@@ -15,3 +15,7 @@ class GoogleAction(str, Enum):
     SOURCE = "source"
     DATA = "data"
     INCLUDED = "included"
+
+class Mir6Action(str, Enum):
+    """百度接口数据限制"""
+    WEIGHT = "weight"
