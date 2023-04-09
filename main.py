@@ -56,12 +56,11 @@ async def middleware(request: Request, call_next):
     """中间件 访问前后"""
     return await middle.middleware(request, call_next, func)
 
-@app.get("/url")
-async def url(q: str=''):
-    """url跳转"""
-    if q[:len("http")] == "http":
-        return RedirectResponse(url=q,status_code=301)
-    return {'q':q}
+@app.get("/s", tags=["百度"])
+async def baidus(wd: str = None,rn:int = 50):
+    """百度接口 搜索输入跳转"""
+    search_url = f"/baidu/source?wd={wd}&rn={rn}"
+    return RedirectResponse(url=search_url,status_code=301)
 
 @app.get("/baidu/{action}", tags=["百度"])
 async def baidu(action: BaiduAction, wd: str = None,rn:int = 50):
@@ -72,6 +71,13 @@ async def baidu(action: BaiduAction, wd: str = None,rn:int = 50):
 async def google(action: GoogleAction, q: str = None,num: int = 50):
     """谷歌接口"""
     return await router.google(action, q,num=num)
+
+@app.get("/url")
+async def url(q: str=''):
+    """google 搜索结果url跳转"""
+    if q[:len("http")] == "http":
+        return RedirectResponse(url=q,status_code=301)
+    return {'q':q}
 
 @app.get("/mir6/{action}", tags=["米人"])
 async def mir6(action: Mir6Action, q: str = None):
