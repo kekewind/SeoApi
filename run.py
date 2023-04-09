@@ -50,7 +50,7 @@ def createj_nginx_conf(port,domain):
 def start():
     "开始"
     port = "17888"
-    domain = "tools3.ezseo.cn"
+    domain = "tools.ezseo.cn"
     createj_nginx_conf(port,domain)
     content = "gunicorn -c conf.py main:app -k uvicorn.workers.UvicornWorker --daemon"
     os.popen(content)
@@ -63,14 +63,13 @@ def close():
     result = send.read()
     if "|-gunicorn," in result:
         print('程序后台运行中，正在关闭进程...')
-        file_path = os.getcwd()
-        sid = re.findall(r'gunicorn,(\d+) ', result)
+        program_name = os.path.basename(os.path.abspath('.'))
+        sid = re.findall(r'gunicorn,(\d+) .*?/'+program_name, result)
         print(sid)
         for i in sid:
             kill = f"kill -9 {i}"
-            print(kill+f" from {file_path}")
+            print(kill+f" from {program_name}")
             os.system(kill)
-
 
 def restart():
     "重启"

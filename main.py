@@ -64,14 +64,14 @@ async def url(q: str=''):
     return {'q':q}
 
 @app.get("/baidu/{action}", tags=["百度"])
-async def baidu(action: BaiduAction, q: str = None):
+async def baidu(action: BaiduAction, wd: str = None,rn:int = 50):
     """百度接口"""
-    return await router.baidu(action, q)
+    return await router.baidu(action, wd,rn=rn)
 
 @app.get("/google/{action}", tags=["谷歌"])
 async def google(action: GoogleAction, q: str = None,num: int = 50):
     """谷歌接口"""
-    return await router.google(action, q,num)
+    return await router.google(action, q,num=num)
 
 @app.get("/mir6/{action}", tags=["米人"])
 async def mir6(action: Mir6Action, q: str = None):
