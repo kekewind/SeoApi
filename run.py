@@ -11,7 +11,7 @@ def createj_nginx_conf(port,domain):
     "自动创建nginx配置文件"
     if not os.path.exists("logs"):
         os.makedirs("./logs")
-    path = "/www/server/panel/vhost/nginx/SeoApi.conf"
+    path = f"/www/server/panel/vhost/nginx/{domain}.conf"
     if os.path.exists(path):
         with open(path, "r", encoding='utf8') as f:
             conf = f.read()
@@ -50,7 +50,7 @@ def createj_nginx_conf(port,domain):
 def start():
     "开始"
     port = "17888"
-    domain = "tools1.ezseo.cn"
+    domain = "tools3.ezseo.cn"
     createj_nginx_conf(port,domain)
     content = "gunicorn -c conf.py main:app -k uvicorn.workers.UvicornWorker --daemon"
     os.popen(content)
