@@ -6,14 +6,12 @@ import linecache
 import os
 import random
 import re
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 import aiofiles
 import arrow
 from fake_useragent import UserAgent
 import httpx
-import chardet
 from lxml import etree
-from tenacity import retry, stop_after_attempt
 
 
 class Baidu():
@@ -21,7 +19,7 @@ class Baidu():
 
     def __init__(self, func):
         self.func = func
-        os.makedirs("cookie_cache",exist_ok=True)
+        os.makedirs("cookie_cache", exist_ok=True)
 
     async def request_get(self, url, headers=None, params=None, use_ip='127.0.0.1'):
         """异步访问"""
@@ -43,9 +41,9 @@ class Baidu():
         cookie = resp.headers['set-cookie'].strip()
         return {"cookie": cookie, "User-Agent": user_agent, 'use_ip': use_ip}
 
-    async def search(self, q,num):
+    async def search(self, querry, num):
         """搜索查询"""
-        text = unquote(q)
+        text = unquote(querry)
         url = "http://www.baidu.com/s"
         params = {"wd": text,
                   "rn": num,
@@ -56,6 +54,7 @@ class Baidu():
         os.makedirs(ip_path_dir, exist_ok=True)
         ip_path = os.path.join(ip_path_dir, use_ip)+".json"
         if not os.path.exists(ip_path):
+            # 生成cookie并写入本地
             cache = await self.get_cookie(use_ip)
             async with aiofiles.open(ip_path, "w", encoding='utf-8')as json_f:
                 await json_f.write(json.dumps(cache))
@@ -64,7 +63,9 @@ class Baidu():
             cache_text = "".join(linecache.getlines(ip_path))
             cache = json.loads(cache_text)
         headers = {'User-Agent': cache["User-Agent"],
-                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;'
+                   'q=0.9,image/avif,image/webp,image/apng,*/*;'
+                   'q=0.8,application/signed-exchange;v=b3;q=0.7',
                    'Accept-Encoding': 'gzip, deflate',
                    'Accept-Language': 'zh-CN,zh;q=0.9',
                    'Connection': 'keep-alive',
@@ -73,24 +74,26 @@ class Baidu():
                    'Referer': 'http://www.baidu.com/',
                    'Upgrade-Insecure-Requests': '1'}
         resp = await self.request_get(url, headers=headers, params=params, use_ip=use_ip)
-        return resp.text, cache
+        return resp.text
 
-    async def get_source(self, q,num):
+    async def get_source(self, querry, num):
         """获取搜索结果源码"""
-        resp_text, cache = await self.search(q,num)
+        resp_text = await self.search(querry, num)
         return resp_text
 
-    async def get_data(self, q,num):
+    async def get_data(self, querry, num):
         """获取搜索结果data数据"""
-        resp_text, cache = await self.search(q,num)
+        resp_text = await self.search(querry, num)
         if "</title>" not in resp_text:
-            return {"keyword": q, 'success': False,'info':'百度验证码'}
+            return {"keyword": querry, 'success': False, 'info': '百度验证码'}
         tree = etree.HTML(resp_text)
-        others_source = tree.xpath("//div[@class='c-font-medium list_1V4Yg']//a/text()")
+        others_source = tree.xpath(
+            "//div[@class='c-font-medium list_1V4Yg']//a/text()")
         more = []
         if len(others_source) > 0:
             more = [i.strip() for i in others_source]
-        related_source = tree.xpath("//table[@class='rs-table_3RiQc']//a/text()")
+        related_source = tree.xpath(
+            "//table[@class='rs-table_3RiQc']//a/text()")
         related = []
         if len(related_source) > 0:
             related = [i.strip() for i in related_source]
@@ -111,43 +114,43 @@ class Baidu():
                         "string(div//span[@class='content-right_8Zs40'])")
                     origin = result.xpath(
                         "string(div//span[@aria-hidden='true'])")
-                    full_domain, domain = self.func.get_domain_info(real_url)[1:]
+                    full_domain, domain = self.func.get_domain_info(real_url)[
+                        1:]
                     datas.append({'id': index_id, 'title': title, 'origin': origin,
                                  "full_domain": full_domain, "domain": domain, "link": real_url, 'des': des})
-        return {"keyword": q, "related": related, "more": more, "data": datas,'success': True}
+        return {"keyword": querry, "related": related, "more": more, "data": datas, 'success': True}
 
-    async def get_included(self, q,num):
+    async def get_included(self, querry, num):
         """获取收录数据"""
-        link = q.replace('http://', '').replace('https://', '')
+        link = querry.replace('http://', '').replace('https://', '')
         full_domain, domain = self.func.get_domain_info(link)[1:]
-        if "." in domain:
-            # 查询链接自身收录
-            resp_text, cache = await self.search(link,num)
-            if '没有找到该URL' in resp_text:
-                included = False
-                return {'url': q, 'included': included, 'success': True}
-            else:
-                included = True
-                resp_text, cache = await self.search(q,num)
-                tree = etree.HTML(resp_text)
-                results = tree.xpath(
-                    "//div[contains(concat(' ', @class, ' '), 'result')]")
-                for result in results:
-                    srcid_ = result.xpath("@srcid")
-                    srcid = srcid_[0] if len(srcid_) > 0 else ""
-                    id_ = result.xpath("@id")
-                    index_id = id_[0] if len(id_) > 0 else ""
-                    title = result.xpath("string(div//h3/a)")
-                    if len(title.strip()) > 1:
-                        if srcid == "1599" and index_id == "1":
-                            des = result.xpath(
-                                "string(div//span[@class='content-right_8Zs40'])")
-                            origin = result.xpath(
-                                "string(div//span[@aria-hidden='true'])")
-                            break
-                return {'url': q, 'included': included, 'title': title, 'origin': origin, "full_domain": full_domain, "domain": domain, 'des': des, 'success': True}
+        if "." not in domain:
+            return {'url': querry, 'info': f'{querry} 非url链接', 'success': False}
+        # 查询链接自身收录
+        resp_text = await self.search(link, num)
+        if '没有找到该URL' in resp_text:
+            included = False
+            return {'url': querry, 'included': included, 'success': True}
         else:
-            return {'url': q, 'info': f'{q} 非url链接', 'success': False}
+            included = True
+            resp_text = await self.search(querry, num)
+            tree = etree.HTML(resp_text)
+            results = tree.xpath(
+                "//div[contains(concat(' ', @class, ' '), 'result')]")
+            for result in results:
+                srcid_ = result.xpath("@srcid")
+                srcid = srcid_[0] if len(srcid_) > 0 else ""
+                id_ = result.xpath("@id")
+                index_id = id_[0] if len(id_) > 0 else ""
+                title = result.xpath("string(div//h3/a)")
+                if len(title.strip()) > 1:
+                    if srcid == "1599" and index_id == "1":
+                        des = result.xpath(
+                            "string(div//span[@class='content-right_8Zs40'])")
+                        origin = result.xpath(
+                            "string(div//span[@aria-hidden='true'])")
+                        break
+            return {'url': querry, 'included': included, 'title': title, 'origin': origin, "full_domain": full_domain, "domain": domain, 'des': des, 'success': True}
 
     async def get_pulldown(self, q):
         """百度下拉词"""

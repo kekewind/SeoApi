@@ -46,6 +46,13 @@ class Func():
         root_domain = ".".join([tld.domain, tld.suffix]).strip(".").lower()
         return subdomain, full_domain, root_domain
 
+    def is_domain(self, link):
+        """判断是否为域名"""
+        root_domain = self.get_domain_info(link)[-1]
+        if '.' in root_domain:
+            return True
+        return False
+
     def get_yaml(self, path):
         """yaml文件解析"""
         linecache.checkcache(path)

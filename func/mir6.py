@@ -22,6 +22,8 @@ class Mir6():
 
     async def get_weight(self, q):
         """权重查询"""
+        if not self.func.is_domain(q):
+            return {"querry":q,"error":'查询域名非法'}
         use_ip = random.choice(self.func.get_ips())
         url = "https://api.mir6.com/api/bdqz"
         headers = {
