@@ -18,18 +18,18 @@ class Router():
         if not os.path.exists('cookie_cache'):
             os.mkdir('cookie_cache')
 
-    async def baidu(self, action, wd,rn=50):
+    async def baidu(self, action, q,num=50):
         """百度接口"""
         baidu = Baidu(self.func)
         if action == BaiduAction.SOURCE:
-            result = await baidu.get_source(wd,rn)
+            result = await baidu.get_source(q,num)
             return Response(content=result, media_type='text/html;charset=utf-8')
         elif action == BaiduAction.DATA:
-            result = await baidu.get_data(wd,rn)
+            result = await baidu.get_data(q,num)
         elif action == BaiduAction.INCLUDED:
-            result = await baidu.get_included(wd,rn)
+            result = await baidu.get_included(q,num)
         elif action == BaiduAction.PULLDOWN:
-            result = await baidu.get_pulldown(wd)
+            result = await baidu.get_pulldown(q)
         return JSONResponse(result)
 
     async def google(self, action, q,num=50):

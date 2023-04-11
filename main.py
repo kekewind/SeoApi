@@ -59,13 +59,13 @@ async def middleware(request: Request, call_next):
 @app.get("/s", tags=["百度"])
 async def baidus(wd: str = None,rn:int = 50):
     """百度接口 搜索输入跳转"""
-    search_url = f"/baidu/source?wd={wd}&rn={rn}"
+    search_url = f"/baidu/source?q={wd}&num={rn}"
     return RedirectResponse(url=search_url,status_code=301)
 
 @app.get("/baidu/{action}", tags=["百度"])
-async def baidu(action: BaiduAction, wd: str = None,rn:int = 50):
+async def baidu(action: BaiduAction, q: str = None,num:int = 50):
     """百度接口"""
-    return await router.baidu(action, wd,rn=rn)
+    return await router.baidu(action, q,num=num)
 
 @app.get("/google/{action}", tags=["谷歌"])
 async def google(action: GoogleAction, q: str = None,num: int = 50):
