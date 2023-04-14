@@ -28,6 +28,8 @@ class Router():
             result = await baidu.get_data(q,num)
         elif action == BaiduAction.INCLUDED:
             result = await baidu.get_included(q,num)
+        elif action == BaiduAction.INCLUDE:
+            result = await baidu.get_include(q,num)
         elif action == BaiduAction.PULLDOWN:
             result = await baidu.get_pulldown(q)
         return JSONResponse(result)
@@ -40,8 +42,10 @@ class Router():
             return Response(content=result, media_type='text/html;charset=utf-8')
         elif action == GoogleAction.DATA:
             result = await google.get_data(q,num)
-        elif action == GoogleAction.INCLUDED:
-            result = await google.get_included(q,num)
+        elif action == GoogleAction.INCLUDE:
+            result = await google.get_include(q,num)
+        elif action == GoogleAction.PULLDOWN:
+            result = await google.get_pulldown(q)
         return JSONResponse(result)
     
     async def mir6(self, action, q):

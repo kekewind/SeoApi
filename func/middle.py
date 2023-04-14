@@ -13,6 +13,8 @@ from func.const import *
 
 async def middleware(request, call_next, func):
     """中间件 访问前后"""
+    # 请求处理前计时
+    start_time = time.time()
     config = func.get_yaml('config/config.yml')
     # UA黑名单处理
     if 'user-agent' not in request.headers:
@@ -26,8 +28,6 @@ async def middleware(request, call_next, func):
     fuck_ips = config["【访问策略】"]["IP黑名单"]
     if fuck_ips != '' and any(i in real_ip for i in fuck_ips.split("|")):
         return JSONResponse(status_code=403, content={"error": '10001'})
-    # 请求处理前计时
-    start_time = time.time()
     # ---------------
     response = await call_next(request)
     # ---------------

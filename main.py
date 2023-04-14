@@ -5,16 +5,11 @@ from enum import Enum
 from fastapi import Response, Request, Form, Body
 from fastapi import FastAPI
 import uvicorn
-# from pydantic import Baseactionl
-# from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse, RedirectResponse, FileResponse
 from func.function import Func
 from func import middle
 from func.router import Router
 from func.const import *
-# from starlette.staticfiles import StaticFiles
-# from starlette.templating import Jinja2Templates
-# from func.function import Func
 
 
 app = FastAPI(
