@@ -38,7 +38,7 @@ class Google():
                   "hl": "zh-CN",
                 #   "lr": "lang_zh-CN",
                   "num": num}
-        use_ip = random.choice(self.func.get_ips())
+        use_ip = await self.func.use_ip('google')
         user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 APIs-Google (+https://developers.google.com/webmasters/APIs-Google.html)"
         headers = {
             "user-agent": user_agent,
@@ -51,6 +51,8 @@ class Google():
         """获取搜索结果源码"""
         try:
             result = await self.search(querry,num)
+            result = result.replace('="/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"',
+            '="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"')
             return result
         except Exception as err:
             print(err)
@@ -86,6 +88,8 @@ class Google():
             resp_text = await self.search(querry,num)
             count_ = re.findall('找到约 (.*?) 条',resp_text)
             count = int(count_[0].replace(',','')) if len(count_)>0 else None
+            if count is None:
+                return {"querry": querry, 'success': False, 'info': '谷歌验证码'}
             tree = etree.HTML(resp_text)
             divs = tree.xpath('//div[@class="yuRUbf"]')
             datas = []
@@ -99,6 +103,7 @@ class Google():
                                     "full_domain": full_domain, "domain": root_domain, "link": real_url,'des': des})
                 except Exception as err:
                     print(index, err)
+
             # 相关搜索 关键词
             related = tree.xpath('//div[@data-hveid="data-hveid"]/a//b/text()')
             related = tree.xpath('//div[@class="s75CSd OhScic AB4Wff"]//b/text()') if related == [] else related
@@ -123,6 +128,8 @@ class Google():
             resp_text = await self.search(link,num)
             include_ = re.findall('找到约 (.*?) 条',resp_text)
             include = int(include_[0].replace(',','')) if len(include_)>0 else None
+            if include is None:
+                return {"querry": querry, 'success': False, 'info': '谷歌验证码'}
             tree = etree.HTML(resp_text)
             divs = tree.xpath('//div[@class="yuRUbf"]')
             datas = []
@@ -145,7 +152,7 @@ class Google():
         """谷歌下拉词"""
         try:
             url = f"https://www.google.com/complete/search?q={querry}&client=gws-wiz-serp&xssi=t&hl=zh-CN&authuser=0"
-            use_ip = random.choice(self.func.ips)
+            use_ip = await self.func.use_ip('google')
             transport = httpx.AsyncHTTPTransport(local_address=use_ip)
             async with httpx.AsyncClient(transport=transport) as client:
                 resp = await client.get(url, timeout=15)

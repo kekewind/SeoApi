@@ -8,6 +8,7 @@ import random
 import sys
 from urllib.parse import quote
 import aiofiles
+import arrow
 import tldextract
 from ruamel import yaml
 
@@ -37,6 +38,35 @@ class Func():
             print(err)
             return []
 
+    async def use_ip(self,name):
+        """谷歌获取IP"""
+        path_dir = os.path.join("cookie_cache", arrow.now(
+            "Asia/Shanghai").format('YYYY-MM-DD'))
+        os.makedirs(path_dir, exist_ok=True)
+        use_ips_path = os.path.join(path_dir, f"{name}_ips")+".txt"
+        use_index_path = os.path.join(path_dir, f"{name}_index")+".txt"
+        if not os.path.exists(use_ips_path):
+            ips = list(set(self.ips))
+            async with aiofiles.open(use_ips_path, "w", encoding='utf-8')as txt_f:
+                await txt_f.write("\n".join(ips))
+        if not os.path.exists(use_index_path):
+            async with aiofiles.open(use_index_path, "a", encoding='utf-8')as txt_f:
+                await txt_f.write("")
+        use_ips = self.get_lines(use_ips_path)
+        async with aiofiles.open(use_index_path, "r", encoding='utf-8')as txt_f:
+            index_text = await txt_f.read()
+        index = len(index_text)
+        use_len=len(use_ips)
+        if index<use_len:
+            use_ip = use_ips[index]
+        else:
+            index = index%use_len
+            use_ip = use_ips[index]
+        print(index,use_ip)
+        async with aiofiles.open(use_index_path, "a", encoding='utf-8')as txt_f:
+            await txt_f.write("1")
+        return use_ip
+
     def get_domain_info(self, domain):
         """获取域名前后缀"""
         tld = tldextract.extract(domain)
@@ -58,4 +88,10 @@ class Func():
         linecache.checkcache(path)
         yml = "".join(linecache.getlines(path))
         result = yaml.load(yml, Loader=yaml.SafeLoader)
+        return result
+    
+    def get_lines(self, path):
+        """txt文件行数据"""
+        linecache.checkcache(path)
+        result = [i.strip() for i in linecache.getlines(path) if len(i.strip())>0]
         return result

@@ -50,7 +50,7 @@ class Baidu():
         params = {"wd": text,
                   "rn": num,
                   "ie": "UTF-8"}
-        use_ip = random.choice(self.func.get_ips())
+        use_ip = await self.func.use_ip('baidu')
         ip_path_dir = os.path.join("cookie_cache", arrow.now(
             "Asia/Shanghai").format('YYYY-MM-DD'))
         os.makedirs(ip_path_dir, exist_ok=True)
@@ -91,10 +91,10 @@ class Baidu():
         """获取搜索结果data数据"""
         try:
             resp_text = await self.search(querry, num)
-            count_ = re.findall('找到相关结果约(.*?)个',resp_text)
-            count = int(count_[0].replace(',','')) if len(count_)>0 else None
             if "</title>" not in resp_text:
                 return {"keyword": querry, 'success': False, 'info': '百度验证码'}
+            count_ = re.findall('找到相关结果约(.*?)个',resp_text)
+            count = int(count_[0].replace(',','')) if len(count_)>0 else None
             tree = etree.HTML(resp_text)
             others_source = tree.xpath(
                 "//div[@class='c-font-medium list_1V4Yg']//a/text()")
@@ -141,6 +141,8 @@ class Baidu():
                 return {'url': querry, 'info': f'{querry} 非url链接', 'success': False}
             # 查询链接自身收录
             resp_text = await self.search(link, num)
+            if "</title>" not in resp_text:
+                return {"keyword": querry, 'success': False, 'info': '百度验证码'}
             if 'http://zhanzhang.baidu.com/sitesubmit/index?sitename=' in resp_text:
                 included = False
                 return {'url': querry, 'included': included, 'success': True}
@@ -175,6 +177,8 @@ class Baidu():
             # 查询site收录
             link = f"site:{full_domain}"
             resp_text = await self.search(link, num)
+            if "</title>" not in resp_text:
+                return {"keyword": querry, 'success': False, 'info': '百度验证码'}
             if 'http://zhanzhang.baidu.com/sitesubmit/index?sitename=' in resp_text:
                 include = 0
                 return {'querry': querry, 'include': include, 'success': True}
@@ -213,7 +217,7 @@ class Baidu():
         """百度下拉词"""
         try:
             url = f"https://www.baidu.com/sugrec?pre=1&p=3&ie=utf-8&json=1&prod=pc&from=pc_web&sugsid=34647,34068,34749,34654,34711,34597,34584,34107,26350,34502,34423,22157,34691&cb=jQuery11020383424710195859_1632731774592&_=1632731774608&wd={querry}"
-            use_ip = random.choice(self.func.ips)
+            use_ip = await self.func.use_ip('baidu')
             transport = httpx.AsyncHTTPTransport(local_address=use_ip)
             async with httpx.AsyncClient(transport=transport) as client:
                 resp = await client.get(url, timeout=15)

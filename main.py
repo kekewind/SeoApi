@@ -51,20 +51,36 @@ async def middleware(request: Request, call_next):
     """中间件 访问前后"""
     return await middle.middleware(request, call_next, func)
 
-@app.get("/s", tags=["百度"])
-async def baidus(wd: str = None,rn:int = 50):
+@app.get("/s")
+async def baidu_(wd: str = None,rn:int = 50):
     """百度接口 搜索输入跳转"""
+    if wd is None:
+        return JSONResponse(status_code=404, content={"error": '参数错误'})
     search_url = f"/baidu/source?q={wd}&num={rn}"
     return RedirectResponse(url=search_url,status_code=301)
 
 @app.get("/baidu/{action}", tags=["百度"])
 async def baidu(action: BaiduAction, q: str = None,num:int = 50):
     """百度接口"""
+    if q is None:
+        return JSONResponse(status_code=404, content={"error": '参数错误'})
     return await router.baidu(action, q,num=num)
+
+
+@app.get("/search")
+async def google_(action: GoogleAction, q: str = None,num: int = 50):
+    """谷歌接口 搜索输入跳转"""
+    if q is None:
+        return JSONResponse(status_code=404, content={"error": '参数错误'})
+    search_url = f"/google/source?q={q}&num={num}"
+    return RedirectResponse(url=search_url,status_code=301)
+
 
 @app.get("/google/{action}", tags=["谷歌"])
 async def google(action: GoogleAction, q: str = None,num: int = 50):
     """谷歌接口"""
+    if q is None:
+        return JSONResponse(status_code=404, content={"error": '参数错误'})
     return await router.google(action, q,num=num)
 
 @app.get("/url")
@@ -77,6 +93,8 @@ async def url(q: str=''):
 @app.get("/mir6/{action}", tags=["米人"])
 async def mir6(action: Mir6Action, q: str = None):
     """米人mir6.com接口"""
+    if q is None:
+        return JSONResponse(status_code=404, content={"error": '参数错误'})
     return await router.mir6(action, q)
 
 
