@@ -21,7 +21,7 @@ def createj_nginx_conf(port,domain):
         conf = """server
 {
     listen 80;
-    server_name 【域名】;
+    server_name 【域名】 seoapi;
     index index.html;
     root /www/server/nginx/html;
     location / {

@@ -66,7 +66,6 @@ async def baidu(action: BaiduAction, q: str = None,num:int = 50):
         return JSONResponse(status_code=404, content={"error": '参数错误'})
     return await router.baidu(action, q,num=num)
 
-
 @app.get("/search")
 async def google_(q: str = None,num: int = 50):
     """谷歌接口 搜索输入跳转"""

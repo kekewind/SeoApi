@@ -16,6 +16,7 @@ class Google():
 
     def __init__(self,func):
         self.func = func
+        self.config= self.func.get_yaml('config/config.yml')
 
     async def request_get(self, url, headers=None, params=None, use_ip='127.0.0.1'):
         """异步访问"""
@@ -89,7 +90,7 @@ class Google():
             count_ = re.findall('找到约 (.*?) 条',resp_text)
             count = int(count_[0].replace(',','')) if len(count_)>0 else None
             if count is None:
-                return {"querry": querry, 'success': False, 'info': '谷歌验证码'}
+                return {"querry": querry, 'success': False, 'info': '谷歌验证码','from':self.config['【网站信息】']['程序名称']}
             tree = etree.HTML(resp_text)
             divs = tree.xpath('//div[@class="yuRUbf"]')
             datas = []
@@ -116,7 +117,6 @@ class Google():
             print(err)
             return {'keyword': querry, 'info': str(err), 'success': False}
 
-
     async def get_include(self, querry, num):
         """获取收录详情数据"""
         try:
@@ -129,7 +129,7 @@ class Google():
             include_ = re.findall('找到约 (.*?) 条',resp_text)
             include = int(include_[0].replace(',','')) if len(include_)>0 else None
             if include is None:
-                return {"querry": querry, 'success': False, 'info': '谷歌验证码'}
+                return {"querry": querry, 'success': False, 'info': '谷歌验证码','from':self.config['【网站信息】']['程序名称']}
             tree = etree.HTML(resp_text)
             divs = tree.xpath('//div[@class="yuRUbf"]')
             datas = []

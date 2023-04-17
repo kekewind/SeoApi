@@ -20,6 +20,7 @@ class Baidu():
 
     def __init__(self, func):
         self.func = func
+        self.config= self.func.get_yaml('config/config.yml')
         os.makedirs("cookie_cache", exist_ok=True)
 
     async def request_get(self, url, headers=None, params=None, use_ip='127.0.0.1'):
@@ -92,7 +93,7 @@ class Baidu():
         try:
             resp_text = await self.search(querry, num)
             if "</title>" not in resp_text:
-                return {"keyword": querry, 'success': False, 'info': '百度验证码'}
+                return {"keyword": querry, 'success': False, 'info': '百度验证码','from':self.config['【网站信息】']['程序名称']}
             count_ = re.findall('找到相关结果约(.*?)个',resp_text)
             count = int(count_[0].replace(',','')) if len(count_)>0 else None
             tree = etree.HTML(resp_text)
@@ -142,7 +143,7 @@ class Baidu():
             # 查询链接自身收录
             resp_text = await self.search(link, num)
             if "</title>" not in resp_text:
-                return {"keyword": querry, 'success': False, 'info': '百度验证码'}
+                return {"keyword": querry, 'success': False, 'info': '百度验证码','from':self.config['【网站信息】']['程序名称']}
             if 'http://zhanzhang.baidu.com/sitesubmit/index?sitename=' in resp_text:
                 included = False
                 return {'url': querry, 'included': included, 'success': True}
@@ -178,7 +179,7 @@ class Baidu():
             link = f"site:{full_domain}"
             resp_text = await self.search(link, num)
             if "</title>" not in resp_text:
-                return {"keyword": querry, 'success': False, 'info': '百度验证码'}
+                return {"keyword": querry, 'success': False, 'info': '百度验证码','from':self.config['【网站信息】']['程序名称']}
             if 'http://zhanzhang.baidu.com/sitesubmit/index?sitename=' in resp_text:
                 include = 0
                 return {'querry': querry, 'include': include, 'success': True}
