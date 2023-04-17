@@ -5,6 +5,7 @@ import os
 import re
 import time
 import click
+from func.function import Func
 
 
 def createj_nginx_conf(port,domain):
@@ -49,8 +50,9 @@ def createj_nginx_conf(port,domain):
 
 def start():
     "开始"
+    config = Func().get_yaml('config/config.yml')
     port = "17888"
-    domain = "tools.ezseo.cn"
+    domain = config['【网站信息】']['绑定域名']
     createj_nginx_conf(port,domain)
     content = "gunicorn -c conf.py main:app -k uvicorn.workers.UvicornWorker --daemon"
     os.popen(content)
