@@ -68,7 +68,7 @@ async def baidu(action: BaiduAction, q: str = None,num:int = 50):
 
 
 @app.get("/search")
-async def google_(action: GoogleAction, q: str = None,num: int = 50):
+async def google_(q: str = None,num: int = 50):
     """谷歌接口 搜索输入跳转"""
     if q is None:
         return JSONResponse(status_code=404, content={"error": '参数错误'})
