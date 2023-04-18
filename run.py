@@ -46,6 +46,7 @@ def createj_nginx_conf(port,domain):
 }""".replace("【端口号】", port).replace('【域名】',domain)
         with open(path, "w", encoding='utf8') as f:
             f.write(conf)
+        print(f"新建nignx配置：\n{conf}")
 
 
 def start():
